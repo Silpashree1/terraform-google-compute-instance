@@ -18,8 +18,13 @@ resource "google_compute_instance" "default" {
 
   // Allow the instance to be stopped by terraform when updating configuration
   allow_stopping_for_update = var.allow_stopping_for_update
-
-  metadata_startup_script = var.enable_startup_script ? templatefile("${path.root}/startup.sh", {}) : null
+  
+  locals{
+       is_win = length(regexall("(windows)", var.boot_disk_image))
+       final = is_win > 0? "tzutil /s 'India Standard Time'":"var.enable_startup_script ? templatefile("${path.root}/startup.sh", {}) : null"
+    }
+  #var.enable_startup_script ? templatefile("${path.root}/startup.sh", {}) : null
+  metadata_startup_script = local.final
 
   metadata = {
     enable-oslogin = "TRUE"
